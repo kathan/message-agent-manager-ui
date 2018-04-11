@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Message Agent - Agent Endpoint</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.0.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.js"></script>
+    <script type="text/javascript" src="js/AgentCtrl.js"/></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.7.0/feather.js"/></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <link href="css/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <style>
+    html,body { height: 100%;}
+    .payload_list{border:1px solid silver}
+    .data_list, .payload_list, .file_list{padding:3px}
+    .file_item, .payload_item{list-style:none;}
+    .progress { height: 1em;i { line-height: 1em; }}
+    .progress-bar { transition: width 1s ease-in-out; }
+    </style>
+  </head>
+  <body ng-app="AgentApp" ng-controller="AgentCtrl">
+    <div class="row" style="height:100%;">
+      <div id="drop_zone" class="col" style="overflow: scroll;height:100%;border: 1px solid silver">
+        Drop folder/files here to create payload or press <button><span style="cursor:pointer" ng-click="newPayload()" class="oi oi-plus"></span></button>
+        <button ng-disabled="(!new_payloads.length)"><span style="cursor:pointer" ng-click="uploadAll()" class="oi oi-cloud-upload"></span></button>
+        <ul class="payload_list" ng-repeat="new_payload in new_payloads">
+          <span style="cursor:pointer;padding:3px" ng-click="removePayload(new_payload)" class="oi oi-trash float-right"></span>
+          <span style="cursor:pointer;padding:3px" ng-click="uploadPayload(new_payload)" class="oi oi-cloud-upload float-right"></span>
+          <h6>New Payload</h6>
+          <li class="payload_item">
+            <progressbar class="progress-striped active" animate="true" max="100" value="new_payload.progress" type="success"><spa ng-show="new_payload.progress">{{new_payload.progress}} %</span></progressbar>
+            </uib-progressbar>
+            
+            <h6>Files</h6>
+            <ul class="file_list" ng-repeat="file in new_payload.files">
+              <li class="file_item">{{file.name}}<span style="cursor:pointer" ng-click="removeFile(new_payload, file)" class="oi oi-trash float-right"></span></li>
+            </ul>
+            <span style="cursor:pointer;padding:3px" ng-click="addData(new_payload)" class="oi oi-plus float-right"></span>
+            
+              <h6>Data</h6>
+              <ul class="data_list" ng-repeat="(key, value) in new_payload.data">
+                <li>
+                  {{key}}:
+                  <span ng-attr-id="{{new_payload.$$hashKey.replace(':', '_')+'_'+key}}" ng-init="focus(new_payload.$$hashKey.replace(':', '_')+'_'+key);" contenteditable="true" style="min-width:1em;flex: 1;flex-grow: 1;" ng-model="new_payload.data[key]"></span>
+                
+                  <span style="cursor:pointer" ng-click="removeData(new_payload, key)" class="oi oi-trash float-right"></span>
+                </li>
+              </ul>
+            
+          </li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Payloads</h4>
+        <ul class="payload_list" ng-repeat="payload in payloads">
+          <li class="payload_item">
+            <!--span style="cursor:pointer;padding:3px" ng-click="deletePayload(payload)" class="oi oi-trash float-right"></span-->
+            <h5>{{payload.hash.substring(0, trunc_len)}}...{{payload.hash.substring(payload.hash.length-trunc_len)}}</h5>
+            <div ng-show="(payload.files.length > 0)">
+              <h6>Files</h6>
+              <ul class="file_list" ng-repeat="file in payload.files">
+                <li class="file_item">
+                  {{file.filename}}
+                  <!--span style="cursor:pointer" ng-click="removeFile(payload, file)" class="oi oi-trash float-right"></span-->
+                </li>
+              </ul>
+              <!--span style="cursor:pointer;padding:3px" ng-click="editData(payload)" class="oi oi-plus float-right"></span-->
+            </div>
+            <div ng-show="(Object.keys(payload.data).length > 0)">
+              <h6>Data</h6>
+              <ul class="data_list" ng-repeat="(key, value) in payload.data">
+                <li>
+                  {{key}}:
+                  <!--span contenteditable="true" style="flex: 1;flex-grow: 1;" ng-model="value" required></span>
+                  <span style="cursor:pointer" ng-click="removeData(payload, key)" class="oi oi-trash float-right"></span-->
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div ng-repeat="fb in feedback" style="position: fixed;top: 0;left: 0;width: 100%;">
+      <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        {{fb}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
