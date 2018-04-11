@@ -1,10 +1,11 @@
-//curl http://qaxstbap001.qa2-sap.grainger.com/message-agent-manager-ui/api2.njs -F file=@/Users/avddk/Desktop/focus.png -F boo=eek
-const sendIt = require('@kathan/send-it');
-const Async = require('async');
 const fs = require('fs');
 const Url = require('url');
 const http = require('http');
 const path = require('path');
+
+//==== Dependencies ====
+const sendIt = require('@kathan/send-it');
+const Async = require('async');
 
 function cgi(req, res){
   var options = {
